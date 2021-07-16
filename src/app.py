@@ -51,6 +51,15 @@ def get_user():
         response = json_util.dumps(user)
         return Response(response, mimetype='application/json')
 
+@app.route('/delete-user', methods = ['DELETE'])
+def delete_user():
+    userId = request.json['user_id']
+    
+    if userId != '':
+        user = mongo.db.users.delete_one({'_id': ObjectId(userId)})
+        return 'Usuario eliminado'
+    else:
+        return 'Id inválida'
 
 
 
