@@ -1,4 +1,5 @@
 from flask import Flask, request, Response
+from flask import json
 from flask.json import jsonify
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -55,13 +56,30 @@ def get_user():
 def delete_user():
     userId = request.json['user_id']
     
-    if userId != '':
-        user = mongo.db.users.delete_one({'_id': ObjectId(userId)})
-        return 'Usuario eliminado'
+    if userId:
+        mongo.db.users.delete_one({'_id': ObjectId(userId)})
+        response = jsonify({'status': 'Usuario con id: ' + userId + ', eliminado satisfactoriamente.'})
+        return response
     else:
-        return 'Id inválida'
+        return not_found()
 
+@app.route('/update-user', methods = ['PUT'])
+def update_user():
+    userId = request.json['user_id']
+    username = request.json['username']
+    email = request.json['email']
+    password = request.json['password']
 
+    if username and email and password:
+        hashedPassword = generate_password_hash(password)
+        mongo.db.users.update_one({'_id': ObjectId(userId)}, {'$set': {
+                'username': username,
+                'email': email,
+                'password': hashedPassword 
+            }})
+        response = jsonify({'status': 'Usuario con id: ' + userId + ', actualizado satisfactoriamente.'})
+        return response
+        
 
 app.errorhandler(404)
 def not_found(error = None):
