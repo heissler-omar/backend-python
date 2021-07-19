@@ -10,10 +10,9 @@ app = Flask(__name__)
 app.config['MONGO_URI']='mongodb://localhost/backend-python-db'
 mongo = PyMongo(app)
 
-@app.route('/create-user', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def create_user():
     # Reciviendo datos
-    # print(request.json)
     username = request.json['username']
     email = request.json['email']
     password = request.json['password']
@@ -37,47 +36,48 @@ def create_user():
 
     return {'message': 'received'}
 
-@app.route('/get-users', methods=['GET'])
-def get_users():
-    users = mongo.db.users.find()
-    response = json_util.dumps(users)
+# @app.route('/users', methods=['GET'])
+# def get_users():
+#     users = mongo.db.users.find()
+#     response = json_util.dumps(users)
+#     return Response(response, mimetype='application/json')
+
+
+@app.route('/users/<id>', methods = ['GET'])
+def get_user(id):
+    user = mongo.db.users.find_one({'_id': ObjectId(id)})
+    response = json_util.dumps(user)
     return Response(response, mimetype='application/json')
 
-@app.route('/get-user', methods = ['GET'])
-def get_user():
-    userId = request.json['user_id']
+@app.route('/users', methods=['GET'])
+def get_filtered_users():
+    active = request.args.get('active')
+    return 'The value is: ' + active
+    # users = mongo.db.users.find()
+    # response = json_util.dumps(users)
+    # return Response(response, mimetype='application/json')
 
-    if userId != '':
-        user = mongo.db.users.find_one({'_id': ObjectId(userId)})
-        response = json_util.dumps(user)
-        return Response(response, mimetype='application/json')
+@app.route('/users/<id>', methods = ['DELETE'])
+def delete_user(id):
+    mongo.db.users.delete_one({'_id': ObjectId(id)})
+    response = jsonify({'status': 'Usuario con id: ' + id + ', eliminado satisfactoriamente.'})
+    return response
 
-@app.route('/delete-user', methods = ['DELETE'])
-def delete_user():
-    userId = request.json['user_id']
-    
-    if userId:
-        mongo.db.users.delete_one({'_id': ObjectId(userId)})
-        response = jsonify({'status': 'Usuario con id: ' + userId + ', eliminado satisfactoriamente.'})
-        return response
-    else:
-        return not_found()
 
-@app.route('/update-user', methods = ['PUT'])
-def update_user():
-    userId = request.json['user_id']
+@app.route('/users/<id>', methods = ['PUT'])
+def update_user(id):
     username = request.json['username']
     email = request.json['email']
     password = request.json['password']
 
     if username and email and password:
         hashedPassword = generate_password_hash(password)
-        mongo.db.users.update_one({'_id': ObjectId(userId)}, {'$set': {
+        mongo.db.users.update_one({'_id': ObjectId(id)}, {'$set': {
                 'username': username,
                 'email': email,
                 'password': hashedPassword 
             }})
-        response = jsonify({'status': 'Usuario con id: ' + userId + ', actualizado satisfactoriamente.'})
+        response = jsonify({'status': 'Usuario con id: ' + id + ', actualizado satisfactoriamente.'})
         return response
         
 
