@@ -22,7 +22,7 @@ def create_user():
         id = mongo.db.users.insert({
             'username': username, 
             'email': email, 
-            'password:': hashedPassword
+            'password': hashedPassword
         })
         response = {
             'id': str(id),
@@ -36,11 +36,11 @@ def create_user():
 
     return {'message': 'received'}
 
-# @app.route('/users', methods=['GET'])
-# def get_users():
-#     users = mongo.db.users.find()
-#     response = json_util.dumps(users)
-#     return Response(response, mimetype='application/json')
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = mongo.db.users.find()
+    response = json_util.dumps(users)
+    return Response(response, mimetype='application/json')
 
 
 @app.route('/users/<id>', methods = ['GET'])
@@ -49,13 +49,10 @@ def get_user(id):
     response = json_util.dumps(user)
     return Response(response, mimetype='application/json')
 
-@app.route('/users', methods=['GET'])
-def get_filtered_users():
-    active = request.args.get('active')
-    return 'The value is: ' + active
-    # users = mongo.db.users.find()
-    # response = json_util.dumps(users)
-    # return Response(response, mimetype='application/json')
+# @app.route('/users', methods=['GET'])
+# def get_filtered_users():
+#     active = request.args.get('active')
+#     return 'The value is: ' + active
 
 @app.route('/users/<id>', methods = ['DELETE'])
 def delete_user(id):
